@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	winWidth  = 800
-	winHeight = 600
+	winWidth  = 400
+	winHeight = 500
 
 	maxVertexBuffer  = 512 * 1024
 	maxElementBuffer = 128 * 1024
@@ -50,17 +50,15 @@ func main() {
 
 	atlas := nk.NewFontAtlas()
 	nk.NkFontStashBegin(&atlas)
-
-	config := nk.NkFontConfig(17)
-	// config.SetOversample(2, 2)
-	config.SetRange(nk.NkFontChineseGlyphRanges())
-	//sansFont := nk.NkFontAtlasAddFromFile(atlas, "assets/SourceHanSansK-Normal.ttf", 14, &config)
-	sansFont := nk.NkFontAtlasAddFromFile(atlas, "../assets/DroidSansFallback.ttf", 17, &config)
+	// sansFont := nk.NkFontAtlasAddFromBytes(atlas, MustAsset("assets/FreeSans.ttf"), 16, nil)
+	// config := nk.NkFontConfig(14)
+	// config.SetOversample(1, 1)
+	// config.SetRange(nk.NkFontChineseGlyphRanges())
 	// simsunFont := nk.NkFontAtlasAddFromFile(atlas, "/Library/Fonts/Microsoft/SimHei.ttf", 14, &config)
 	nk.NkFontStashEnd()
-	if sansFont != nil {
-		nk.NkStyleSetFont(ctx, sansFont.Handle())
-	}
+	// if simsunFont != nil {
+	// 	nk.NkStyleSetFont(ctx, simsunFont.Handle())
+	// }
 
 	exitC := make(chan struct{}, 1)
 	doneC := make(chan struct{}, 1)
@@ -100,12 +98,12 @@ func gfxMain(win *glfw.Window, ctx *nk.Context, state *State) {
 	// Layout
 	bounds := nk.NkRect(50, 50, 230, 250)
 	update := nk.NkBegin(ctx, "Demo", bounds,
-		nk.WindowBorder)
+		nk.WindowBorder|nk.WindowMovable|nk.WindowScalable|nk.WindowMinimizable|nk.WindowTitle)
 
 	if update > 0 {
 		nk.NkLayoutRowStatic(ctx, 30, 80, 1)
 		{
-			if nk.NkButtonLabel(ctx, "测试button") > 0 {
+			if nk.NkButtonLabel(ctx, "button") > 0 {
 				log.Println("[INFO] button pressed!")
 			}
 		}
