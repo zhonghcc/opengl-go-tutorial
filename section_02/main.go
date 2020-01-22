@@ -97,8 +97,10 @@ func main() {
 func gfxMain(win *glfw.Window, ctx *nk.Context, state *State) {
 	nk.NkPlatformNewFrame()
 
+	width, height := win.GetSize()
+
 	// Layout
-	bounds := nk.NkRect(50, 50, 230, 250)
+	bounds := nk.NkRect(float32(width-230-5), float32(height-250-5), 230, 250)
 	update := nk.NkBegin(ctx, "Demo", bounds,
 		nk.WindowBorder)
 
@@ -157,7 +159,6 @@ func gfxMain(win *glfw.Window, ctx *nk.Context, state *State) {
 	// Render
 	bg := make([]float32, 4)
 	nk.NkColorFv(bg, state.bgColor)
-	width, height := win.GetSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.ClearColor(bg[0], bg[1], bg[2], bg[3])
