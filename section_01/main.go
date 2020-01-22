@@ -21,45 +21,50 @@ const (
 )
 
 func init() {
+	log.Printf("application init")
+	//确保当前线程绑定在操作系统线程上，这是一些图形库的要求
 	runtime.LockOSThread()
 }
 
 func main() {
+	//进行GLFW初始化，如果初始化失败，使用closer在程序退出前执行清理和日志打印
 	if err := glfw.Init(); err != nil {
 		closer.Fatalln(err)
 	}
+	//设置GLFW的版本
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
+	//使用OpenGL核心模式
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	//向前兼容，3.0以后支持，Mac OS上使用3.2版本以上必须设置
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	//使用GLFW创建一个窗口，如果创建失败退出程序
 	win, err := glfw.CreateWindow(winWidth, winHeight, "Nuklear Demo", nil, nil)
 	if err != nil {
 		closer.Fatalln(err)
 	}
+	//设置当前OpenGL上下文为当前窗口线程，每个线程只能有一个上下文
 	win.MakeContextCurrent()
 
 	width, height := win.GetSize()
 	log.Printf("glfw: created window %dx%d", width, height)
 
+	//初始化OpenGL
 	if err := gl.Init(); err != nil {
 		closer.Fatalln("opengl: init failed:", err)
 	}
+	//视口设置
 	gl.Viewport(0, 0, int32(width), int32(height))
 
+	//初始化Nuklear，返回值ctx是Nuklear的上下文
 	ctx := nk.NkPlatformInit(win, nk.PlatformInstallCallbacks)
 
+	//字体设置
 	atlas := nk.NewFontAtlas()
 	nk.NkFontStashBegin(&atlas)
-	// sansFont := nk.NkFontAtlasAddFromBytes(atlas, MustAsset("assets/FreeSans.ttf"), 16, nil)
-	// config := nk.NkFontConfig(14)
-	// config.SetOversample(1, 1)
-	// config.SetRange(nk.NkFontChineseGlyphRanges())
-	// simsunFont := nk.NkFontAtlasAddFromFile(atlas, "/Library/Fonts/Microsoft/SimHei.ttf", 14, &config)
 	nk.NkFontStashEnd()
-	// if simsunFont != nil {
-	// 	nk.NkStyleSetFont(ctx, simsunFont.Handle())
-	// }
 
+	//退出事件
 	exitC := make(chan struct{}, 1)
 	doneC := make(chan struct{}, 1)
 	closer.Bind(func() {
@@ -67,11 +72,14 @@ func main() {
 		<-doneC
 	})
 
+	//背景颜色
 	state := &State{
 		bgColor: nk.NkRgba(28, 48, 62, 255),
 	}
+	//初始化输入框
 	nk.NkTexteditInitDefault(&state.text)
 
+	//fps
 	fpsTicker := time.NewTicker(time.Second / 30)
 	for {
 		select {
@@ -86,7 +94,9 @@ func main() {
 				close(exitC)
 				continue
 			}
+			//glfw的事件响应
 			glfw.PollEvents()
+			//nuklear布局
 			gfxMain(win, ctx, state)
 		}
 	}
@@ -95,10 +105,13 @@ func main() {
 func gfxMain(win *glfw.Window, ctx *nk.Context, state *State) {
 	nk.NkPlatformNewFrame()
 
+	log.Printf("current refresh")
 	// Layout
-	bounds := nk.NkRect(50, 50, 230, 250)
+
+	bounds := nk.NkRect(30, 50, 230, 300)
+	log.Printf("bounds get x=%f", bounds.X())
 	update := nk.NkBegin(ctx, "Demo", bounds,
-		nk.WindowBorder|nk.WindowMovable|nk.WindowScalable|nk.WindowMinimizable|nk.WindowTitle)
+		nk.WindowBorder|nk.WindowMovable|nk.WindowScalable|nk.WindowMinimizable|nk.WindowTitle|nk.WindowClosable)
 
 	if update > 0 {
 		nk.NkLayoutRowStatic(ctx, 30, 80, 1)
